@@ -1,0 +1,68 @@
+/* ===== Login/Registration Form Container ===== */
+#kc-container, #kc-content {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 400px;
+  margin: 40px auto 0 auto;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+  padding: 32px 24px;
+}
+
+/* ===== Brand Colors ===== */
+body, html {
+  background: #f0f3fa !important; /* Your background color */
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* ===== Logo Size/Tweak ===== */
+#kc-header img {
+  max-height: 60px;
+  margin-bottom: 12px;
+}
+
+/* ===== Input Fields ===== */
+input[type="text"], input[type="password"], input[type="email"] {
+  border: 1px solid #a1b2c3;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== Labels/Placeholders (optional) ===== */
+::placeholder {
+  color: #b0b8c1;
+  opacity: 1;
+}
+
+/* ===== Buttons ===== */
+input[type="submit"].btn, .btn-primary, .kc-form-buttons input[type="submit"] {
+  background: #1a73e8;
+  color: #fff;
+  border: 0;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+input[type="submit"].btn:hover, .btn-primary:hover {
+  background: #155ab6;
+}
+
+/* ===== Error Messages ===== */
+.alert-error {
+  border-left: 5px solid #d32f2f;
+  background: #ffebee;
+}
+
+@media (max-width: 700px) {
+  #kc-container, #kc-content {
+    padding: 12px 4vw;
+    max-width: none;
+  }
+  #kc-header {
+    text-align: center;
+  }
+}
