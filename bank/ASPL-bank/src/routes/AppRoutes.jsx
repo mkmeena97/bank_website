@@ -4,16 +4,21 @@ import Layout from "../layout/Layout";
 
 import Home from "../pages/Home";
 import Dashboard from "../pages/Dashboard";
-// import Accounts from "../pages/Accounts";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 import NotFound from "../pages/NotFound";
 import AccountDashboard from "../features/accounts/pages/AccountDashboard";
+import Login from "../pages/Login";        // Import these!
+import Register from "../pages/Register";  // Import these!
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Protect all nested routes with Layout */}
+      {/* Public auth pages */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* All authenticated routes under Layout */}
       <Route
         path="/"
         element={
@@ -22,9 +27,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       >
-        {/* Default redirect to dashboard */}
         <Route index element={<Navigate to="dashboard" replace />} />
-
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="accounts" element={<AccountDashboard />} />
         <Route path="profile" element={<Profile />} />

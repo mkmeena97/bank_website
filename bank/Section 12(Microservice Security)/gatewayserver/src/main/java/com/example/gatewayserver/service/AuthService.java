@@ -8,6 +8,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class AuthService {
 
@@ -56,20 +58,36 @@ public class AuthService {
      * Login using Keycloak credentials, extract JWT, and return custom claims.
      */
     public LoginResponse login(LoginRequest request) {
-        String token = keycloakService.loginAndGetToken(request);
-        String username = jwtUtil.extractUsername(token);
+        Map<String, Object> tokenResponse = keycloakService.loginAndGetTokens(request);
+
+        String accessToken = (String) tokenResponse.get("access_token");
+        String refreshToken = (String) tokenResponse.get("refresh_token");
+        String idToken = (String) tokenResponse.get("id_token");
+
+        String username = jwtUtil.extractUsername(accessToken);
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found in DB. Please register first."));
 
         return new LoginResponse(
-                token,
+                accessToken,
+                refreshToken,
+                idToken,
                 user.getMobileNumber(),
                 user.getFirstName(),
                 user.getEmail(),
                 user.getRole()
         );
     }
+
+
+    /**
+     * Refresh Token
+     */
+    public Map<String, Object> refreshToken(String refreshToken) {
+        return keycloakService.refreshToken(refreshToken);
+    }
+
 
     /**
      * Fetch user profile by username.

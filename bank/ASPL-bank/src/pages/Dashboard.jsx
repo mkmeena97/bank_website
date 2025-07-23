@@ -1,15 +1,24 @@
 // src/pages/Dashboard.jsx
-import { useKeycloak } from '@react-keycloak/web';
+import React from "react";
+import useAuth from "../hooks/useAuth";
 
 const Dashboard = () => {
-  const { keycloak } = useKeycloak();
+  const { user, logout } = useAuth();
 
-  const fullName = keycloak?.tokenParsed?.name || "User";
+  if (!user) {
+    // Should not happen due to PrivateRoute, but just in case
+    return <div>Loading your information...</div>;
+  }
 
   return (
-    <div>
-      <h1>Welcome, {fullName}</h1>
-      <button onClick={() => keycloak.logout()}>Logout</button>
+    <div className="container">
+      <div className="py-4">
+        <h1 className="mb-3">Welcome, {user.firstName || user.username}!</h1>
+        <p>This is your dashboard. Here you can manage your account and view your details.</p>
+        <button className="btn btn-outline-danger mt-3" onClick={logout}>
+          Log out
+        </button>
+      </div>
     </div>
   );
 };

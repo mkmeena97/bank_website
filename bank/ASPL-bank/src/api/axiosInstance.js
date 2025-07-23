@@ -1,65 +1,55 @@
 import axios from "axios";
-import keycloak from "../auth/keycloak";
 
-// Create an Axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:8072"
 });
 
-// Request interceptor: Attach token and optionally refresh
+// Request Interceptor: Attach JWT from LocalStorage
 api.interceptors.request.use(
-  async (config) => {
-    try {
-      if (keycloak?.token) {
-        // Try refreshing token if it's going to expire in next 30s
-        await keycloak.updateToken(30);
-
-        // Attach token regardless of refresh
-        config.headers.Authorization = `Bearer ${keycloak.token}`;
-      }
-    } catch (error) {
-      console.error("🔴 Token refresh failed in request interceptor:", error);
-      keycloak.logout();
-      return Promise.reject("Session expired. You have been logged out.");
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
-  (error) => {
-    console.error("🔴 Request error:", error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor: Handle 401 with silent retry once
+// 401/refresh interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    // Handle 401 Unauthorized only if this is the first retry
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry &&
-      keycloak?.token
+      !error.config._retry &&
+      localStorage.getItem("refresh_token")
     ) {
-      console.warn("⚠️ 401 Unauthorized – attempting silent refresh...");
-
-      originalRequest._retry = true;
+      error.config._retry = true;
 
       try {
-        await keycloak.updateToken(30);
-
-        // Attach the new token and retry the request
-        originalRequest.headers.Authorization = `Bearer ${keycloak.token}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        console.error("🔴 Silent refresh failed in response interceptor:", refreshError);
-        keycloak.logout();
-        return Promise.reject("Session expired. You have been logged out.");
+        const refreshToken = localStorage.getItem("refresh_token");
+        // Call backend refresh API
+        const res = await axios.post(
+          "http://localhost:8072/api/auth/refresh",
+          { refreshToken }
+        );
+        // The backend returns { token, refreshToken, idToken, ... }
+        const { token: newToken, refreshToken: newRefreshToken } = res.data;
+        // Save new token(s)
+        localStorage.setItem("token", newToken);
+        if (newRefreshToken) {
+          localStorage.setItem("refresh_token", newRefreshToken);
+        }
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return api(error.config);
+      } catch (err) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        window.location = "/login";
+        return Promise.reject("Session expired. Please login again.");
       }
     }
-
     return Promise.reject(error);
   }
 );

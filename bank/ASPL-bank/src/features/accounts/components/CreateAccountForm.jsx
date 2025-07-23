@@ -1,7 +1,7 @@
 // src/features/accounts/components/CreateAccountForm.jsx
 
 import React from 'react';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import {
   Box,
@@ -33,11 +33,11 @@ const initialValues = {
 };
 
 /**
- * Props:
- * - loading: boolean (optional spinner)
- * - error: string (optional error message)
- * - statusMsg: string (optional success message)
- * - onSubmit: (values) => void (called with valid form data)
+ * @param {Object} props
+ * @param {boolean} props.loading - Shows spinner and disables submit
+ * @param {string} props.error - Error message
+ * @param {string} props.statusMsg - Success message
+ * @param {Function} props.onSubmit - Formik submit handler (values, actions)
  */
 export default function CreateAccountForm({
   loading = false,
@@ -53,7 +53,14 @@ export default function CreateAccountForm({
         onSubmit && onSubmit(values, actions);
       }}
     >
-      {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
+      {({
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        isSubmitting
+      }) => (
         <Form>
           <TextField
             name="name"

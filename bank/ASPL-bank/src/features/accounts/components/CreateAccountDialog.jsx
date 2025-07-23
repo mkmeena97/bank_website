@@ -21,12 +21,14 @@ export default function CreateAccountDialog({ open, onClose }) {
     }
   }, [open, dispatch]);
 
+  // Handles formik submission
   const handleSubmit = (values, actions) => {
     dispatch(createAccount(values)).then((action) => {
       if (action.meta.requestStatus === 'fulfilled') {
         actions.resetForm();
         if (onClose) onClose();
       }
+      // Optionally handle errors/side-effects here
     });
   };
 

@@ -1,31 +1,32 @@
 // src/routes/PrivateRoute.jsx
-import { useKeycloak } from "@react-keycloak/web";
-import { Navigate, useLocation } from "react-router-dom";
 
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+
+/**
+ * PrivateRoute component:
+ * - Wraps any route that requires authentication.
+ * - Uses AuthContext (via useAuth) to check auth state.
+ * - Redirects to /login if not authenticated, preserving destination.
+ * - Shows loading UI if auth state is being resolved.
+ */
 const PrivateRoute = ({ children }) => {
-  const { keycloak, initialized } = useKeycloak();
+  const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Wait until Keycloak is definitely initialized
-  if (!initialized) {
+  if (loading) {
+    // Auth status still being resolved (token/profile load)
     return <div>Loading authentication...</div>;
   }
 
-  // Keycloak loaded, but auth status unknown: wait for token to load
-  if (initialized && typeof keycloak.authenticated === "undefined") {
-    // Defensive—shouldn't trigger often, but protects against potential race
-    return <div>Checking session...</div>;
+  if (!isAuthenticated) {
+    // Not authenticated: send user to login with post-login redirect to original page
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Only if fully loaded and NOT authenticated, then redirect
-  if (initialized && keycloak.authenticated === false) {
-    keycloak.login({ redirectUri: window.location.origin + location.pathname });
-    return <div>Redirecting to login...</div>;
-  }
-
-  // Authenticated: render protected route
+  // Authenticated: show protected content
   return children;
 };
-
 
 export default PrivateRoute;

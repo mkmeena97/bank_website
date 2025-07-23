@@ -14,6 +14,7 @@ export default function AddMoneyDialog({ open, onClose, onSuccess, mobileNumber 
   const { loading, statusMsg, error } = useSelector((state) => state.accounts);
   const [amount, setAmount] = React.useState('');
 
+  // Reset status & amount when dialog closed
   React.useEffect(() => {
     if (!open) {
       dispatch(clearStatus());
@@ -21,12 +22,14 @@ export default function AddMoneyDialog({ open, onClose, onSuccess, mobileNumber 
     }
   }, [open, dispatch]);
 
+  // Close onSuccess after success
   React.useEffect(() => {
     if (statusMsg && !loading && open) {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         onClose?.();
         onSuccess?.();
-      }, 1000);
+      }, 850); // slightly faster feedback
+      return () => clearTimeout(timeout);
     }
   }, [statusMsg, loading, open, onClose, onSuccess]);
 
@@ -62,7 +65,6 @@ export default function AddMoneyDialog({ open, onClose, onSuccess, mobileNumber 
               autoFocus
             />
           </Box>
-
           {statusMsg && (
             <Box color="success.main" mb={1}>
               {statusMsg}

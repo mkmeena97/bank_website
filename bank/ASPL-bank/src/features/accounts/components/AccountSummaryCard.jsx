@@ -25,6 +25,8 @@ export default function AccountSummaryCard({ account }) {
     );
   }
 
+  const status = String(account.status || "ACTIVE").toUpperCase();
+
   return (
     <Card sx={{ minWidth: 300, mb: 2, boxShadow: 3 }}>
       <CardContent>
@@ -37,8 +39,8 @@ export default function AccountSummaryCard({ account }) {
           <Box flexGrow={1} />
           <Chip
             size="small"
-            label={account.status || "ACTIVE"}
-            color={String(account.status).toUpperCase() === 'ACTIVE' ? "success" : "warning"}
+            label={status}
+            color={status === 'ACTIVE' ? "success" : "warning"}
             sx={{ fontWeight: 600 }}
           />
         </Box>
@@ -51,24 +53,24 @@ export default function AccountSummaryCard({ account }) {
             <CreditCardIcon sx={{ fontSize: 18, mr: 1 }} />
             <Typography variant="body2" sx={{ minWidth: 120 }}>Account #:</Typography>
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {formatAccountNumber(account.accountNumber)}
+              {formatAccountNumber?.(account.accountNumber) ?? account.accountNumber}
             </Typography>
           </Box>
           <Box display="flex" alignItems="center">
             <Typography variant="body2" sx={{ minWidth: 120 }}>Account Type:</Typography>
-            <Typography variant="body2">{formatAccountType(account.accountType)}</Typography>
+            <Typography variant="body2">{formatAccountType?.(account.accountType) ?? account.accountType}</Typography>
           </Box>
           <Box display="flex" alignItems="center">
             <Typography variant="body2" sx={{ minWidth: 120 }}>Branch:</Typography>
-            <Typography variant="body2">{account.branchAddress}</Typography>
+            <Typography variant="body2">{account.branchAddress || "-"}</Typography>
           </Box>
           <Box display="flex" alignItems="center">
             <Typography variant="body2" sx={{ minWidth: 120 }}>Mobile:</Typography>
-            <Typography variant="body2">{account.mobileNumber}</Typography>
+            <Typography variant="body2">{account.mobileNumber || "-"}</Typography>
           </Box>
           <Box display="flex" alignItems="center">
             <Typography variant="body2" sx={{ minWidth: 120 }}>Email:</Typography>
-            <Typography variant="body2">{account.email}</Typography>
+            <Typography variant="body2">{account.email || "-"}</Typography>
           </Box>
         </Box>
 
@@ -76,7 +78,7 @@ export default function AccountSummaryCard({ account }) {
         <Divider sx={{ my: 1 }} />
         <Box textAlign="right">
           <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', letterSpacing: 1 }}>
-            {formatCurrency(account.balance)}
+            {formatCurrency?.(account.balance) ?? account.balance}
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Available Balance

@@ -4,17 +4,21 @@ package com.example.gatewayserver.dto;
  * Response returned after successful login.
  */
 public class LoginResponse {
-    private String token;
+    private String token;          // access token
+    private String refreshToken;
+    private String idToken;
     private String mobileNumber;
     private String firstName;
     private String email;
     private String role;
 
-    public LoginResponse() {
-    }
+    public LoginResponse() {}
 
-    public LoginResponse(String token, String mobileNumber, String firstName, String email, String role) {
+    public LoginResponse(String token, String refreshToken, String idToken,
+                         String mobileNumber, String firstName, String email, String role) {
         this.token = token;
+        this.refreshToken = refreshToken;
+        this.idToken = idToken;
         this.mobileNumber = mobileNumber;
         this.firstName = firstName;
         this.email = email;
@@ -27,6 +31,22 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getIdToken() {
+        return idToken;
+    }
+
+    public void setIdToken(String idToken) {
+        this.idToken = idToken;
     }
 
     public String getMobileNumber() {

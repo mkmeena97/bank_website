@@ -69,6 +69,15 @@
         "attributes": {}
       },
       {
+        "id": "1190a2a1-9749-42bc-a24d-1d91f557e2fd",
+        "name": "USER",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "e07cd2a6-0252-4f57-8c11-a8a3e03f1043",
+        "attributes": {}
+      },
+      {
         "id": "6985c74f-df52-4a7d-a624-f68d293291f1",
         "name": "uma_authorization",
         "description": "${role_uma_authorization}",
@@ -78,27 +87,18 @@
         "attributes": {}
       },
       {
-        "id": "92855710-da8d-4430-a30b-43eefeb2567d",
-        "name": "user",
-        "description": "",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "e07cd2a6-0252-4f57-8c11-a8a3e03f1043",
-        "attributes": {}
-      },
-      {
-        "id": "5a2cd302-c1d8-4ad7-a6a3-cedf5b2653ae",
-        "name": "admin",
-        "description": "",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "e07cd2a6-0252-4f57-8c11-a8a3e03f1043",
-        "attributes": {}
-      },
-      {
         "id": "05e05ba9-ae28-48be-8884-978d17c5b526",
         "name": "offline_access",
         "description": "${role_offline-access}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "e07cd2a6-0252-4f57-8c11-a8a3e03f1043",
+        "attributes": {}
+      },
+      {
+        "id": "6eeac583-76fc-4b29-ae56-781b9cfa55a4",
+        "name": "ADMIN",
+        "description": "",
         "composite": false,
         "clientRole": false,
         "containerId": "e07cd2a6-0252-4f57-8c11-a8a3e03f1043",

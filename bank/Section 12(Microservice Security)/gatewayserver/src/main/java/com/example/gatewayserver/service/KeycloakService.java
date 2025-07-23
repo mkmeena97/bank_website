@@ -60,6 +60,7 @@ public class KeycloakService {
     public String createUserInKeycloak(RegisterRequest request) {
         String adminToken = getAdminAccessToken();
 
+        // 1. Create User
         String userUrl = keycloakServerUrl + "/admin/realms/" + realm + "/users";
 
         Map<String, Object> userPayload = new HashMap<>();
@@ -105,11 +106,48 @@ public class KeycloakService {
             throw new RuntimeException("Failed to create user in Keycloak: HTTP status " + response.getStatusCode());
         }
 
+        // Get newly created userId
         String location = response.getHeaders().getLocation().toString();
-        return location.substring(location.lastIndexOf("/") + 1);
+        String userId = location.substring(location.lastIndexOf("/") + 1);
+
+        // 2. Assign the "USER" realm role (or the requested role) to this user
+        String roleName = (request.getRole() != null && !request.getRole().isBlank()) ? request.getRole() : "USER";
+        assignRealmRoleToUser(userId, roleName, adminToken);
+
+        return userId;
     }
 
-    public String loginAndGetToken(com.example.gatewayserver.dto.LoginRequest request) {
+
+    // Helper method to assign a realm role to user
+    private void assignRealmRoleToUser(String userId, String roleName, String adminToken) {
+        // 2.1. Get role representation
+        String roleUrl = keycloakServerUrl + "/admin/realms/" + realm + "/roles/" + roleName;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ResponseEntity<Map> roleRes = restTemplate.exchange(
+                roleUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+
+        if (roleRes.getStatusCode() != HttpStatus.OK || roleRes.getBody() == null) {
+            throw new RuntimeException("Role " + roleName + " not found in Keycloak. Create it first.");
+        }
+        Map role = roleRes.getBody();
+
+        // 2.2. Assign role to user
+        String mappingUrl = keycloakServerUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm";
+        List<Map> rolesList = List.of(role);
+
+        ResponseEntity<Void> mappingRes = restTemplate.exchange(
+                mappingUrl, HttpMethod.POST, new HttpEntity<>(rolesList, headers), Void.class);
+
+        if (!mappingRes.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Failed to assign role " + roleName + " to user " + userId);
+        }
+    }
+
+
+    public Map<String, Object> loginAndGetTokens(com.example.gatewayserver.dto.LoginRequest request) {
         String tokenUrl = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
 
         HttpHeaders headers = new HttpHeaders();
@@ -121,6 +159,7 @@ public class KeycloakService {
         form.add("client_secret", clientSecret);
         form.add("username", request.getUsername());
         form.add("password", request.getPassword());
+        form.add("scope", "openid");
 
         HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(form, headers);
 
@@ -135,8 +174,39 @@ public class KeycloakService {
             throw new RuntimeException("Login failed with status: " + tokenResponse.getStatusCode());
         }
 
-        return (String) tokenResponse.getBody().get("access_token");
+        return tokenResponse.getBody(); // Return entire token response map (access_token, refresh_token, id_token, etc)
     }
+
+
+    public Map<String, Object> refreshToken(String refreshToken) {
+        String tokenUrl = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "refresh_token");
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+        form.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(form, headers);
+
+        ResponseEntity<Map> tokenResponse;
+        try {
+            tokenResponse = restTemplate.exchange(tokenUrl, HttpMethod.POST, tokenRequest, Map.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Refresh token failed: " + e.getMessage(), e);
+        }
+
+        if (!tokenResponse.getStatusCode().is2xxSuccessful() || tokenResponse.getBody() == null) {
+            throw new RuntimeException("Refresh token failed with status: " + tokenResponse.getStatusCode());
+        }
+
+        return tokenResponse.getBody();
+    }
+
+
 
     public void updateUserInKeycloak(String keycloakId, ProfileUpdateRequest request) {
         String adminToken = getAdminAccessToken();

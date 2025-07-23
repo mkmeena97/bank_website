@@ -1,4 +1,3 @@
-// src/features/accounts/pages/AccountDashboard.jsx
 import React from 'react';
 import {
   Box,
@@ -13,33 +12,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAccountByMobile, clearAccount } from '../accountSlice';
 import AccountSummaryCard from '../components/AccountSummaryCard';
 import AccountTabs from '../components/AccountTabs';
-import { useKeycloak } from '@react-keycloak/web';
+import CreateAccountDialog from '../components/CreateAccountDialog';
+import useAuth from '../../../hooks/useAuth';
 
 export default function AccountDashboard() {
   const dispatch = useDispatch();
-  const { keycloak } = useKeycloak();
+  const { user } = useAuth();
 
-  const userDetails = keycloak?.tokenParsed || {};
-  let userMobile = '';
-  if (Array.isArray(userDetails.mobileNumber) && userDetails.mobileNumber.length) {
-    userMobile = userDetails.mobileNumber[0];
-  } else if (typeof userDetails.mobileNumber === 'string') {
-    userMobile = userDetails.mobileNumber;
-  } else if (userDetails.phone_number) {
-    userMobile = userDetails.phone_number;
-  } else if (userDetails.preferred_username) {
-    userMobile = userDetails.preferred_username;
-  }
-  const userEmail = userDetails.email || '';
-  const userName = userDetails.name || userDetails.given_name || '';
+  const userMobile = user?.mobileNumber || '';
+  const userEmail = user?.email || '';
+  const userName = user?.firstName || user?.username || 'User';
 
   const { account, loading, error } = useSelector((state) => state.accounts);
+
+  const [openDialog, setOpenDialog] = React.useState(false);
 
   React.useEffect(() => {
     if (userMobile && /^[0-9]{10}$/.test(userMobile)) {
       dispatch(fetchAccountByMobile(userMobile));
-    } else {
-      console.warn('Invalid or missing mobile number for account fetch:', userMobile);
     }
     return () => dispatch(clearAccount());
   }, [userMobile, dispatch]);
@@ -98,11 +88,26 @@ export default function AccountDashboard() {
         </>
       )}
 
-      {!loading && !account && !error && (
-        <Paper sx={{ p: 2, mt: 2 }}>
-          <Typography variant="body2" color="textSecondary">
-            No account found for this mobile number. Please create one or contact support.
+      {/* If no account, ALWAYS allow to open Create Account dialog */}
+      {!loading && !account && (
+        <Paper sx={{ p: 2, mt: 2, textAlign: 'center' }}>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            No account found for this mobile number.
           </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenDialog(true)}
+          >
+            Create Account
+          </Button>
+          <CreateAccountDialog
+            open={openDialog}
+            onClose={() => {
+              setOpenDialog(false);
+              handleRefresh(); // Optional: refresh after creation
+            }}
+          />
         </Paper>
       )}
     </Box>
