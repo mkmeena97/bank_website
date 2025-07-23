@@ -27,9 +27,10 @@ public class SecurityConfig {
                     .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                     .authorizeExchange(exchanges -> exchanges
                             .pathMatchers(HttpMethod.GET).permitAll()
-                            .pathMatchers("/aspl/accounts/**").hasRole("ACCOUNTS")
-                            .pathMatchers("/aspl/cards/**").hasRole("CARDS")
-                            .pathMatchers("/aspl/loans/**").hasRole("LOANS")
+                                    .pathMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                            .pathMatchers("/aspl/accounts/**").hasRole("USER")
+                            .pathMatchers("/aspl/cards/**").hasRole("USER")
+                            .pathMatchers("/aspl/loans/**").hasRole("USER")
 //                            .anyExchange().denyAll()
                     )
                     .oauth2ResourceServer(oauth2 -> oauth2
