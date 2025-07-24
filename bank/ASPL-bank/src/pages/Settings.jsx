@@ -1,35 +1,21 @@
 import { useContext } from "react";
-import { useKeycloak } from "@react-keycloak/web";
 import { ColorModeContext } from "../context/ThemeContext";
-import {
-  useTheme,
-  Typography,
-  Button,
-  Box,
-  Stack,
-  Divider,
-  Paper,
-} from "@mui/material";
+import { useTheme, Typography, Button, Box, Stack, Divider, Paper } from "@mui/material";
+import useAuth from "../hooks/useAuth";
 
 const Settings = () => {
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
-  const { keycloak } = useKeycloak();
-
-  const realm = keycloak.realm || "aspl-realm";
-  const baseUrl = keycloak.authServerUrl?.replace(/\/$/, "") || "http://localhost:8080";
-  const referrer = "React-app";
-  const referrerUri = encodeURIComponent(window.location.origin + "/settings");
-
-  const accountUrl = `${baseUrl}/realms/${realm}/account?referrer=${referrer}&referrer_uri=${referrerUri}`;
-  const passwordResetUrl = `${baseUrl}/realms/${realm}/account/account-security/signing-in?referrer=${referrer}&referrer_uri=${referrerUri}`;
+  const { user } = useAuth();
 
   const handleEditProfile = () => {
-    window.location.href = accountUrl;
+    // Redirect to your frontend's profile edit page
+    window.location.href = "/edit-profile";
   };
 
   const handleForgotPassword = () => {
-    window.location.href = passwordResetUrl;
+    // Redirect to your custom forgot password flow
+    window.location.href = "/forgot-password";
   };
 
   return (
@@ -38,6 +24,11 @@ const Settings = () => {
         <Typography variant="h5" gutterBottom>
           ⚙️ Settings
         </Typography>
+
+        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+          Logged in as: <strong>{`${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "-"}</strong>
+        </Typography>
+
 
         <Typography variant="subtitle1" sx={{ mb: 2 }}>
           Current Theme: <strong>{theme.palette.mode.toUpperCase()}</strong>
