@@ -1,9 +1,10 @@
-
 spring:
   application:
     name: "gatewayserver"
+
   config:
     import: "optional:configserver:http://localhost:8071/,application.properties"
+
   datasource:
     url: jdbc:h2:mem:userdb
     driver-class-name: org.h2.Driver
@@ -13,28 +14,47 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema.sql
+
   h2:
     console:
       enabled: true
       path: /h2-console
 
-
+# Its implemented in gateway server main file code
   cloud:
-    gateway:
-      server:
-        webflux:
-          discovery:
-            locator:
-              enabled: false
-              lowerCaseServiceId: true
-          httpclient:
-            connect-timeout: 1000
-            response-timeout: 30s
+#    gateway:
+#      discovery:
+#        locator:
+#          enabled: true              #dynamic routing (Gateway will automatically create routes  like: lb://accounts  →  /accounts/**)
+#      routes:
+#        - id: accounts
+#          uri: lb://accounts
+#          predicates:
+#            - Path=/accounts/**
+#          filters:
+#            - RewritePath=/aspl/accounts/(?<path>.*), /${path}
+
+      httpclient:
+        connect-timeout: 1000         # Time to establish connection (TCP handshake)
+        response-timeout: 30s         # Time to wait for actual response data
+
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: "http://localhost:7080/realms/bank/protocol/openid-connect/certs"
+
+  #Zipkin with micrometer
+  zipkin:
+    base-url: http://localhost:9411
+    enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8070/eureka/
+    register-with-eureka: true
+    fetch-registry: true
 
 management:
   endpoints:
@@ -49,7 +69,14 @@ management:
       enabled: true
   metrics:
     tags:
-      application: $(spring.application.name)
+      application: ${spring.application.name}
+  #Distributed tracing
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0  # 100% of requests traced (lower to 0.1 in prod)
+    propagation:
+      type: b3  # Use Zipkin-compatible B3 headers
 
 info:
   app:
@@ -62,6 +89,10 @@ logging:
     com:
       eazybytes:
         gatewayserver: DEBUG
+
+  #Distributted tracing log pattern
+  pattern:
+    level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]"
 
 resilience4j.circuitbreaker:
   configs:
